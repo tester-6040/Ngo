@@ -91,9 +91,10 @@ Default Admin:
 - Donor donation submission (description, quantity, pickup address)
 - Orphanage accept/reject flow
 - Admin approval + orphanage assignment
-- Email notifications on donation submission:
-  - Admin recipients: `balaabineshh0@gmail.com` and `balaabinesh88@gmail.com`
-  - Donor email
+- Email notifications with separate templates:
+  - Admin recipients receive a **new donation** email: `balaabineshh0@gmail.com` and `balaabinesh88@gmail.com`
+  - Donor receives a **thank you for donating** confirmation email
+  - Assigned orphanage receives an **assigned for you** email when admin assigns a donation
 
 ## 6) API Endpoints (REST-like)
 - `GET|POST|PUT|PATCH|DELETE /api/users`

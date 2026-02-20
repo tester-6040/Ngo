@@ -41,18 +41,19 @@ final class DonationController extends Controller
 
         $donationId = $this->donations->create((int) $auth['id'], $description, $quantity, $pickupAddress);
 
-        $mailBody = "Donation ID: {$donationId}\nDonor: {$auth['name']}\nEmail: {$auth['email']}\nDescription: {$description}\nQuantity: {$quantity}\nPickup Address: {$pickupAddress}";
-
         $adminRecipients = array_unique(array_filter([
             $this->config['mail']['admin_email'] ?? '',
             $this->config['mail']['secondary_admin_email'] ?? '',
         ]));
 
+        $adminMessage = $this->adminNewDonationMessage($donationId, $auth, $description, $quantity, $pickupAddress);
+
         foreach ($adminRecipients as $recipient) {
-            Mailer::send((string) $recipient, 'New Dress Donation Submitted', $mailBody, $this->config['mail']);
+            Mailer::send((string) $recipient, 'New Donation Submitted', $adminMessage, $this->config['mail']);
         }
 
-        Mailer::send($auth['email'], 'Donation Received - NGO Platform', $mailBody, $this->config['mail']);
+        $donorMessage = $this->donorThankYouMessage($donationId, $auth, $description, $quantity, $pickupAddress);
+        Mailer::send($auth['email'], 'Thank You for Donating', $donorMessage, $this->config['mail']);
 
         Session::set('flash_success', 'Donation submitted successfully. Notification email sent.');
         $this->redirect('/dashboard');
@@ -82,6 +83,14 @@ final class DonationController extends Controller
         if ($updated < 1) {
             Session::set('flash_error', 'Donation cannot be assigned because it is already finalized.');
             $this->redirect('/dashboard');
+        }
+
+        $donation = $this->donations->find($donationId);
+        $orphanage = $this->users->findById($orphanId);
+        if ($donation && $orphanage && ($orphanage['role'] ?? '') === 'orphanage') {
+            $donor = $this->users->findById((int) $donation['user_id']);
+            $message = $this->orphanageAssignmentMessage($donationId, $orphanage, $donation, $donor);
+            Mailer::send((string) $orphanage['email'], 'Donation Assigned for Your Orphanage', $message, $this->config['mail']);
         }
 
         Session::set('flash_success', 'Donation assigned to orphanage. Awaiting orphanage decision.');
@@ -116,5 +125,49 @@ final class DonationController extends Controller
 
         Session::set('flash_success', 'Donation status updated.');
         $this->redirect('/dashboard');
+    }
+
+    private function adminNewDonationMessage(int $donationId, array $donor, string $description, int $quantity, string $pickupAddress): string
+    {
+        return "Hello Admin,\n\n"
+            . "A new dress donation has been submitted.\n\n"
+            . "Donation ID: {$donationId}\n"
+            . "Donor Name: {$donor['name']}\n"
+            . "Donor Email: {$donor['email']}\n"
+            . "Description: {$description}\n"
+            . "Quantity: {$quantity}\n"
+            . "Pickup Address: {$pickupAddress}\n\n"
+            . "Please review and assign this donation from the admin dashboard.\n\n"
+            . "Regards,\nDress Donation Platform";
+    }
+
+    private function donorThankYouMessage(int $donationId, array $donor, string $description, int $quantity, string $pickupAddress): string
+    {
+        return "Hello {$donor['name']},\n\n"
+            . "Thank you for donating to our NGO platform.\n"
+            . "Your donation request has been recorded successfully.\n\n"
+            . "Donation ID: {$donationId}\n"
+            . "Description: {$description}\n"
+            . "Quantity: {$quantity}\n"
+            . "Pickup Address: {$pickupAddress}\n\n"
+            . "Our admin team will review and assign your donation shortly.\n\n"
+            . "With gratitude,\nDress Donation Platform";
+    }
+
+    private function orphanageAssignmentMessage(int $donationId, array $orphanage, array $donation, ?array $donor): string
+    {
+        $donorName = $donor['name'] ?? 'Donor';
+        $donorEmail = $donor['email'] ?? 'N/A';
+
+        return "Hello {$orphanage['name']},\n\n"
+            . "A donation has been assigned to your orphanage.\n\n"
+            . "Donation ID: {$donationId}\n"
+            . "Donor Name: {$donorName}\n"
+            . "Donor Email: {$donorEmail}\n"
+            . "Description: {$donation['description']}\n"
+            . "Quantity: {$donation['quantity']}\n"
+            . "Pickup Address: {$donation['pickup_address']}\n\n"
+            . "Please log in to your dashboard and accept or reject this assignment.\n\n"
+            . "Regards,\nDress Donation Platform";
     }
 }
