@@ -34,7 +34,13 @@ Production-grade, no-framework portal where users donate used dresses and admins
    ```
 4. Open `http://localhost:8000`.
 
-## Apache Rewrites
+## Route Behavior / Subfolder Hosting
+- Links are generated as clean URLs using automatic base-path detection from `SCRIPT_NAME`.
+- This fixes deployments such as `http://localhost/Ngo-codex/` where routes must become `http://localhost/Ngo-codex/dashboard` (not `/dashboard`).
+- If your environment cannot auto-detect correctly, set `APP_BASE_PATH` in `config.php` (example: `/Ngo-codex`).
+
+## Apache Requirements
+- Enable `mod_rewrite` and allow `.htaccess` (`AllowOverride All`) in your virtual host.
 - `.htaccess` is included to hide `.php` extensions in Apache deployments.
 
 ## Default Admin

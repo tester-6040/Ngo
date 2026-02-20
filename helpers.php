@@ -22,23 +22,32 @@ function h(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
-function route_map(): array
-{
-    return [
-        '' => 'index.php',
-        'login' => 'login.php',
-        'register' => 'register.php',
-        'dashboard' => 'dashboard.php',
-        'donate' => 'donate.php',
-        'admin' => 'admin.php',
-        'orphanage' => 'orphanage.php',
-        'logout' => 'logout.php',
-    ];
-}
-
 function app_base_path(): string
 {
-    return APP_BASE_PATH === '' ? '' : '/' . trim(APP_BASE_PATH, '/');
+    static $basePath = null;
+
+    if (is_string($basePath)) {
+        return $basePath;
+    }
+
+    if (APP_BASE_PATH !== '') {
+        $basePath = '/' . trim(APP_BASE_PATH, '/');
+
+        return $basePath;
+    }
+
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $detected = str_replace('\\', '/', dirname((string) $scriptName));
+
+    if ($detected === '/' || $detected === '.' || $detected === '\\') {
+        $basePath = '';
+
+        return $basePath;
+    }
+
+    $basePath = '/' . trim($detected, '/');
+
+    return $basePath;
 }
 
 function route_url(string $route = ''): string
