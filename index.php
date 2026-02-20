@@ -2,39 +2,107 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/layout.php';
+use Controllers\ApiController;
+use Controllers\AuthController;
+use Controllers\DashboardController;
+use Controllers\DonationController;
+use Core\Csrf;
+use Core\Database;
+use Core\Session;
+use Models\Donation;
+use Models\User;
 
-render_header('Home');
-$user = current_user();
-?>
-<section class="grid lg:grid-cols-2 gap-8 items-center">
-    <div>
-        <p class="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold mb-4">Trusted NGO Donation Network</p>
-        <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-tight">Professional dress donation workflow for social impact.</h1>
-        <p class="mt-5 text-lg text-slate-600 max-w-xl">Connect donors, administrators, and orphanage teams in one reliable system with status visibility, assignment control, and timely notifications.</p>
-        <div class="mt-7 flex flex-wrap gap-3">
-            <?php if ($user): ?>
-                <a href="<?= h(route_url('dashboard')) ?>" class="bg-brand-700 hover:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium">Open Dashboard</a>
-            <?php else: ?>
-                <a href="<?= h(route_url('register')) ?>" class="bg-brand-700 hover:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium">Start Donating</a>
-                <a href="<?= h(route_url('login')) ?>" class="bg-white border border-slate-300 hover:border-slate-400 px-5 py-3 rounded-xl font-medium">Portal Login</a>
-            <?php endif; ?>
-        </div>
-        <div class="mt-8 grid sm:grid-cols-3 gap-3">
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-xs text-slate-500">Role Accounts</p><p class="text-xl font-semibold">3</p></div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-xs text-slate-500">Email Alerts</p><p class="text-xl font-semibold">Instant</p></div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-xs text-slate-500">Workflow</p><p class="text-xl font-semibold">Trackable</p></div>
-        </div>
-    </div>
+require_once __DIR__ . '/core/Database.php';
+require_once __DIR__ . '/core/BaseModel.php';
+require_once __DIR__ . '/core/Session.php';
+require_once __DIR__ . '/core/Csrf.php';
+require_once __DIR__ . '/core/Mailer.php';
+require_once __DIR__ . '/core/Controller.php';
+require_once __DIR__ . '/models/User.php';
+require_once __DIR__ . '/models/Donation.php';
+require_once __DIR__ . '/controllers/AuthController.php';
+require_once __DIR__ . '/controllers/DashboardController.php';
+require_once __DIR__ . '/controllers/DonationController.php';
+require_once __DIR__ . '/controllers/ApiController.php';
 
-    <div class="bg-white rounded-2xl shadow-soft border border-slate-200 p-7">
-        <h2 class="text-xl font-semibold mb-5">Operational lifecycle</h2>
-        <div class="space-y-4 text-slate-600">
-            <div class="flex gap-4"><span class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-semibold grid place-content-center">1</span><p>Donor submits dress details and quantity.</p></div>
-            <div class="flex gap-4"><span class="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold grid place-content-center">2</span><p>Admin receives an alert and verifies donation readiness.</p></div>
-            <div class="flex gap-4"><span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-semibold grid place-content-center">3</span><p>Donation is assigned to an orphanage for pickup/distribution.</p></div>
-            <div class="flex gap-4"><span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-semibold grid place-content-center">4</span><p>Orphanage marks delivery complete and progress remains auditable.</p></div>
-        </div>
-    </div>
-</section>
-<?php render_footer(); ?>
+$config = require __DIR__ . '/config/app.php';
+Session::start();
+
+$uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+$base = rtrim($config['base_url'], '/');
+if ($base !== '' && str_starts_with($uri, $base)) {
+    $uri = substr($uri, strlen($base));
+    $uri = $uri === '' ? '/' : $uri;
+}
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+$factory = static function () use ($config): array {
+    $db = Database::connection($config['db']);
+    $userModel = new User($db);
+    $donationModel = new Donation($db);
+
+    return [$userModel, $donationModel];
+};
+
+switch ([$method, $uri]) {
+    case ['GET', '/']:
+        $csrf = Csrf::token();
+        $title = 'Home';
+        require __DIR__ . '/views/home.php';
+        break;
+    case ['GET', '/login']:
+        $csrf = Csrf::token();
+        $title = 'Login';
+        require __DIR__ . '/views/auth/login.php';
+        break;
+    case ['POST', '/login']:
+        [$userModel] = $factory();
+        (new AuthController($config, $userModel))->login();
+        break;
+    case ['GET', '/register']:
+        $csrf = Csrf::token();
+        $title = 'Register';
+        require __DIR__ . '/views/auth/register.php';
+        break;
+    case ['POST', '/register']:
+        [$userModel] = $factory();
+        (new AuthController($config, $userModel))->register();
+        break;
+    case ['POST', '/logout']:
+        [$userModel] = $factory();
+        (new AuthController($config, $userModel))->logout();
+        break;
+    case ['GET', '/dashboard']:
+        [$userModel, $donationModel] = $factory();
+        (new DashboardController($config, $donationModel, $userModel))->home();
+        break;
+    case ['POST', '/donations/submit']:
+        [$userModel, $donationModel] = $factory();
+        (new DonationController($config, $donationModel, $userModel))->submit();
+        break;
+    case ['POST', '/donations/admin-assign']:
+        [$userModel, $donationModel] = $factory();
+        (new DonationController($config, $donationModel, $userModel))->adminAssignApprove();
+        break;
+    case ['POST', '/donations/orphanage-decision']:
+        [$userModel, $donationModel] = $factory();
+        (new DonationController($config, $donationModel, $userModel))->orphanageDecision();
+        break;
+    default:
+        if (str_starts_with($uri, '/api/users')) {
+            [$userModel, $donationModel] = $factory();
+            (new ApiController($config, $userModel, $donationModel))->users($method);
+        }
+        if (str_starts_with($uri, '/api/donations')) {
+            [$userModel, $donationModel] = $factory();
+            (new ApiController($config, $userModel, $donationModel))->donations($method);
+        }
+        if (str_starts_with($uri, '/api/orphanage/actions')) {
+            [$userModel, $donationModel] = $factory();
+            (new ApiController($config, $userModel, $donationModel))->orphanageAction($method);
+        }
+
+        http_response_code(404);
+        echo 'Not Found';
+}

@@ -1,56 +1,109 @@
-# NGO Dress Donation Portal (PHP + Tailwind + MySQL)
+# Dress Donation Platform (Core PHP + MySQL + TailwindCSS)
 
-Production-grade, no-framework portal where users donate used dresses and admins route them to orphanages.
+A full **no-framework**, MVC-like NGO platform where users can donate used dresses to orphanages with role-based access and API support.
 
-## Features
-- Separate login for **Admin**, **User (Donor)**, and **Orphanage**.
-- Clean professional UI with modern typography, polished cards, responsive tables, and role-specific dashboards.
-- Extensionless routes (`/login`, `/donate`, `/admin`) instead of `.php` URLs.
-- User donation form with complete history tracking.
-- Automatic admin mail notification when new donations are submitted (`mail()` with `mail.log` fallback).
-- Admin assignment board for routing donations to orphanages.
-- Orphanage dashboard with completion updates.
-- Security hardening:
-  - CSRF protection
-  - secure session cookies + session regeneration
-  - account active/inactive authorization
-  - login lockout for repeated failed attempts (5 failures => 15-minute lock)
+## 1) Folder Structure
 
-## Tech Stack
-- PHP (no framework)
-- TailwindCSS (CDN)
-- MySQL
-- Vanilla JavaScript
+```text
+/config
+  app.php
+/core
+  BaseModel.php
+  Controller.php
+  Csrf.php
+  Database.php
+  Mailer.php
+  Session.php
+/models
+  User.php
+  Donation.php
+/controllers
+  AuthController.php
+  DashboardController.php
+  DonationController.php
+  ApiController.php
+/views
+  /layouts
+    header.php
+    footer.php
+  /auth
+    login.php
+    register.php
+  /dashboard
+    admin.php
+    user.php
+    orphanage.php
+  home.php
+/api
+  bootstrap.php
+  users.php
+  donations.php
+  orphanage-actions.php
+/assets
+  /js
+    validation.js
+  /css
+    app.css
+/storage
+  mail.log
+index.php
+router.php
+.htaccess
+schema.sql
+```
 
-## Setup
-1. Create database + tables:
+## 2) Tech Stack
+- Backend: Core PHP (no framework)
+- DB: MySQL (PDO + prepared statements)
+- Frontend: TailwindCSS + Vanilla JS
+- Architecture: MVC-like custom structure
+- Email: `mail()` + `storage/mail.log` fallback
+
+## 3) Roles
+- Admin
+- User (Donor)
+- Orphanage
+
+Each has separate authentication and role-based dashboard.
+
+## 4) Setup
+1. Import DB schema:
    ```bash
    mysql -u root -p < schema.sql
    ```
-2. Update DB credentials in `config.php`.
-3. Start local server with URL rewriting router:
+2. Update DB credentials in `config/app.php`.
+3. Run local server:
    ```bash
    php -S 0.0.0.0:8000 router.php
    ```
-4. Open `http://localhost:8000`.
+4. Open:
+   - `http://localhost:8000/`
 
-## Route Behavior / Subfolder Hosting
-- Links are generated as clean URLs using automatic base-path detection from `SCRIPT_NAME`.
-- This fixes deployments such as `http://localhost/Ngo-codex/` where routes must become `http://localhost/Ngo-codex/dashboard` (not `/dashboard`).
-- If your environment cannot auto-detect correctly, set `APP_BASE_PATH` in `config.php` (example: `/Ngo-codex`).
+Default Admin:
+- `admin@ngo.local` / `admin12345`
 
-## Apache Requirements
-- Enable `mod_rewrite` and allow `.htaccess` (`AllowOverride All`) in your virtual host.
-- `.htaccess` is included to hide `.php` extensions in Apache deployments.
+## 5) Core Features Delivered
+- Secure login/registration with bcrypt
+- Custom secure session manager (`core/Session.php`)
+- CSRF token validation (`core/Csrf.php`)
+- Donor donation submission (description, quantity, pickup address)
+- Orphanage accept/reject flow
+- Admin approval + orphanage assignment
+- Email notifications on donation submission:
+  - Admin: `balaabineshh0@gmail.com`
+  - Donor email
 
-## Default Admin
-- Email: `admin@ngo.local`
-- Password: `admin123`
+## 6) API Endpoints (REST-like)
+- `GET|POST|DELETE /api/users`
+- `GET|DELETE /api/donations`
+- `POST /api/orphanage/actions`
 
-## Main Routes
-- `/` – professional landing page
-- `/register` – donor/orphanage signup
-- `/login` – role-based secure login
-- `/donate` – donor dashboard and donation history
-- `/admin` – admin assignment board
-- `/orphanage` – orphanage assignment/completion board
+All APIs return JSON.
+
+## 7) Security Notes
+- PDO prepared statements everywhere
+- Input validation in controllers
+- Output escaping in views
+- Session hardening + regeneration
+- CSRF protection on form actions
+

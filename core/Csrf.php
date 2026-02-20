@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Core;
+
+final class Csrf
+{
+    public static function token(): string
+    {
+        $token = Session::get('csrf_token');
+
+        if (!is_string($token) || $token === '') {
+            $token = bin2hex(random_bytes(32));
+            Session::set('csrf_token', $token);
+        }
+
+        return $token;
+    }
+
+    public static function validate(?string $token): bool
+    {
+        $sessionToken = Session::get('csrf_token', '');
+
+        return is_string($token) && is_string($sessionToken) && hash_equals($sessionToken, $token);
+    }
+}

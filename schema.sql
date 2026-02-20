@@ -4,34 +4,49 @@ USE ngo_donation;
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
-    email VARCHAR(120) NOT NULL UNIQUE,
+    email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'user', 'orphanage') NOT NULL,
-    is_active TINYINT(1) NOT NULL DEFAULT 1,
-    failed_attempts INT NOT NULL DEFAULT 0,
-    locked_until DATETIME NULL,
+    role ENUM('admin','user','orphanage') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_users_role (role),
-    INDEX idx_users_active (is_active)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_admin_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS orphanages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    organization_name VARCHAR(180) NOT NULL,
+    address TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_orphanage_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS donations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    orphanage_id INT NULL,
-    title VARCHAR(160) NOT NULL,
+    orphanage_user_id INT NULL,
     description TEXT NOT NULL,
     quantity INT NOT NULL,
-    status ENUM('pending', 'assigned', 'completed') NOT NULL DEFAULT 'pending',
+    pickup_address TEXT NOT NULL,
+    status ENUM('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_donations_status (status),
-    INDEX idx_donations_user_id (user_id),
-    INDEX idx_donations_orphanage_id (orphanage_id),
-    CONSTRAINT fk_donor FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_orphanage FOREIGN KEY (orphanage_id) REFERENCES users(id) ON DELETE SET NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_donation_donor FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_donation_orphanage_user FOREIGN KEY (orphanage_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_donation_status (status)
 ) ENGINE=InnoDB;
 
--- Default admin login: admin@ngo.local / admin123
-INSERT INTO users (name, email, password_hash, role, is_active)
-VALUES ('Platform Admin', 'admin@ngo.local', '$2y$12$oCJkKoXh.2vR7UrO1hGYZ.bS9.IENCriYj.I1n9pR4DwPdLIntcEW', 'admin', 1)
-ON DUPLICATE KEY UPDATE email = VALUES(email), is_active = VALUES(is_active);
+-- default admin: admin@ngo.local / admin12345
+INSERT INTO users (name, email, password_hash, role)
+VALUES ('Platform Admin', 'admin@ngo.local', '$2y$12$00zkGXX3/0v3Nq1aQWrT1uKfeHcMkB8or4q5DxyyYuYBtRy7AE60i', 'admin')
+ON DUPLICATE KEY UPDATE email = VALUES(email);
+
+INSERT INTO admins (user_id)
+SELECT id FROM users WHERE email = 'admin@ngo.local'
+ON DUPLICATE KEY UPDATE user_id = user_id;
