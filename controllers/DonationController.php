@@ -42,7 +42,16 @@ final class DonationController extends Controller
         $donationId = $this->donations->create((int) $auth['id'], $description, $quantity, $pickupAddress);
 
         $mailBody = "Donation ID: {$donationId}\nDonor: {$auth['name']}\nEmail: {$auth['email']}\nDescription: {$description}\nQuantity: {$quantity}\nPickup Address: {$pickupAddress}";
-        Mailer::send($this->config['mail']['admin_email'], 'New Dress Donation Submitted', $mailBody, $this->config['mail']);
+
+        $adminRecipients = array_unique(array_filter([
+            $this->config['mail']['admin_email'] ?? '',
+            $this->config['mail']['secondary_admin_email'] ?? '',
+        ]));
+
+        foreach ($adminRecipients as $recipient) {
+            Mailer::send((string) $recipient, 'New Dress Donation Submitted', $mailBody, $this->config['mail']);
+        }
+
         Mailer::send($auth['email'], 'Donation Received - NGO Platform', $mailBody, $this->config['mail']);
 
         Session::set('flash_success', 'Donation submitted successfully. Notification email sent.');

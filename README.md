@@ -92,12 +92,12 @@ Default Admin:
 - Orphanage accept/reject flow
 - Admin approval + orphanage assignment
 - Email notifications on donation submission:
-  - Admin: `balaabineshh0@gmail.com`
+  - Admin recipients: `balaabineshh0@gmail.com` and `balaabinesh88@gmail.com`
   - Donor email
 
 ## 6) API Endpoints (REST-like)
-- `GET|POST|DELETE /api/users`
-- `GET|DELETE /api/donations`
+- `GET|POST|PUT|PATCH|DELETE /api/users`
+- `GET|POST|PUT|PATCH|DELETE /api/donations`
 - `POST /api/orphanage/actions`
 
 All APIs return JSON.

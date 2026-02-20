@@ -15,6 +15,7 @@ return [
     ],
     'mail' => [
         'admin_email' => 'balaabineshh0@gmail.com',
+        'secondary_admin_email' => 'balaabinesh88@gmail.com',
         'from_email' => 'noreply@dressdonation.local',
         'from_name' => 'Dress Donation Platform',
     ],
