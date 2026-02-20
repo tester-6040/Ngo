@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# If app is in a subfolder, uncomment and set it, e.g. RewriteBase /Ngo-codex/
+# RewriteBase /
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
