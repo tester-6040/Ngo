@@ -29,7 +29,7 @@
                     <tr class="border-t">
                         <td class="p-3"><?= htmlspecialchars($d['description']) ?></td>
                         <td class="p-3"><?= (int) $d['quantity'] ?></td>
-                        <td class="p-3"><span class="px-2 py-1 rounded-full text-xs <?= $d['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : ($d['status'] === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') ?>"><?= htmlspecialchars($d['status']) ?></span></td>
+                        <td class="p-3"><span class="px-2 py-1 rounded-full text-xs <?= $d['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : ($d['status'] === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') ?>"><?= htmlspecialchars(ucfirst($d['status'])) ?></span></td>
                         <td class="p-3"><?= htmlspecialchars($d['orphanage_name'] ?? '-') ?></td>
                     </tr>
                 <?php endforeach; ?>

@@ -59,11 +59,13 @@ final class Donation extends BaseModel
     public function assignAndApprove(int $donationId, int $orphanageUserId): int
     {
         return $this->update(
-            'UPDATE donations SET orphanage_user_id = :orphanage_user_id, status = :status, updated_at = NOW() WHERE id = :id',
+            'UPDATE donations
+             SET orphanage_user_id = :orphanage_user_id, updated_at = NOW()
+             WHERE id = :id AND status = :status',
             [
                 'orphanage_user_id' => $orphanageUserId,
-                'status' => 'accepted',
                 'id' => $donationId,
+                'status' => 'pending',
             ]
         );
     }
@@ -71,11 +73,14 @@ final class Donation extends BaseModel
     public function orphanageDecision(int $donationId, int $orphanageUserId, string $status): int
     {
         return $this->update(
-            'UPDATE donations SET status = :status, updated_at = NOW() WHERE id = :id AND orphanage_user_id = :orphanage_user_id',
+            'UPDATE donations
+             SET status = :status, updated_at = NOW()
+             WHERE id = :id AND orphanage_user_id = :orphanage_user_id AND status = :pending_status',
             [
                 'status' => $status,
                 'id' => $donationId,
                 'orphanage_user_id' => $orphanageUserId,
+                'pending_status' => 'pending',
             ]
         );
     }

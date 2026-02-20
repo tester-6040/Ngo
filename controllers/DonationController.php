@@ -69,8 +69,13 @@ final class DonationController extends Controller
             $this->redirect('/dashboard');
         }
 
-        $this->donations->assignAndApprove($donationId, $orphanId);
-        Session::set('flash_success', 'Donation approved and assigned to orphanage.');
+        $updated = $this->donations->assignAndApprove($donationId, $orphanId);
+        if ($updated < 1) {
+            Session::set('flash_error', 'Donation cannot be assigned because it is already finalized.');
+            $this->redirect('/dashboard');
+        }
+
+        Session::set('flash_success', 'Donation assigned to orphanage. Awaiting orphanage decision.');
         $this->redirect('/dashboard');
     }
 
@@ -94,7 +99,12 @@ final class DonationController extends Controller
             $this->redirect('/dashboard');
         }
 
-        $this->donations->orphanageDecision($donationId, (int) $auth['id'], $decision);
+        $updated = $this->donations->orphanageDecision($donationId, (int) $auth['id'], $decision);
+        if ($updated < 1) {
+            Session::set('flash_error', 'This donation was already finalized and cannot be changed.');
+            $this->redirect('/dashboard');
+        }
+
         Session::set('flash_success', 'Donation status updated.');
         $this->redirect('/dashboard');
     }

@@ -7,21 +7,26 @@
                 <article class="border border-slate-200 rounded-xl p-4">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <p class="font-semibold"><?= htmlspecialchars($d['description']) ?> (x<?= (int) $d['quantity'] ?>)</p>
-                        <span class="text-xs px-2 py-1 rounded-full <?= $d['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : ($d['status'] === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') ?>"><?= htmlspecialchars($d['status']) ?></span>
+                        <span class="text-xs px-2 py-1 rounded-full <?= $d['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : ($d['status'] === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') ?>"><?= htmlspecialchars(ucfirst($d['status'])) ?></span>
                     </div>
                     <p class="text-sm text-slate-600 mt-1">Donor: <?= htmlspecialchars($d['donor_name']) ?> · <?= htmlspecialchars($d['pickup_address']) ?></p>
                     <p class="text-sm text-slate-500">Assigned Orphanage: <?= htmlspecialchars($d['orphanage_name'] ?? 'Not assigned') ?></p>
-                    <form method="post" action="<?= rtrim($config['base_url'], '/') ?>/donations/admin-assign" class="mt-3 flex flex-wrap gap-2 items-center">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                        <input type="hidden" name="donation_id" value="<?= (int) $d['id'] ?>">
-                        <select name="orphanage_user_id" class="border rounded-lg px-3 py-2" required>
-                            <option value="">Assign Orphanage</option>
-                            <?php foreach ($orphans as $o): ?>
-                                <option value="<?= (int) $o['id'] ?>"><?= htmlspecialchars($o['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg">Approve + Assign</button>
-                    </form>
+
+                    <?php if ($d['status'] === 'pending'): ?>
+                        <form method="post" action="<?= rtrim($config['base_url'], '/') ?>/donations/admin-assign" class="mt-3 flex flex-wrap gap-2 items-center">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                            <input type="hidden" name="donation_id" value="<?= (int) $d['id'] ?>">
+                            <select name="orphanage_user_id" class="border rounded-lg px-3 py-2" required>
+                                <option value="">Assign Orphanage</option>
+                                <?php foreach ($orphans as $o): ?>
+                                    <option value="<?= (int) $o['id'] ?>" <?= ((int) ($d['orphanage_user_id'] ?? 0) === (int) $o['id']) ? 'selected' : '' ?>><?= htmlspecialchars($o['name']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg">Assign</button>
+                        </form>
+                    <?php else: ?>
+                        <p class="text-xs text-slate-500 mt-3">This donation is finalized and cannot be reassigned.</p>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         </div>
