@@ -72,6 +72,8 @@ Each has separate authentication and role-based dashboard.
    mysql -u root -p < schema.sql
    ```
 2. Update DB credentials in `config/app.php`.
+
+- `base_url` in `config/app.php` can be left empty for auto-detection (works in subfolders like `/Ngo-codex`), or set explicitly if your server setup requires it.
 3. Run local server:
    ```bash
    php -S 0.0.0.0:8000 router.php

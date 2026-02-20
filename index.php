@@ -28,11 +28,23 @@ require_once __DIR__ . '/controllers/ApiController.php';
 $config = require __DIR__ . '/config/app.php';
 Session::start();
 
+$base = rtrim((string) ($config['base_url'] ?? ''), '/');
+if ($base === '') {
+    $scriptName = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    $detectedBase = str_replace('\\', '/', dirname($scriptName));
+    $base = ($detectedBase === '/' || $detectedBase === '.' || $detectedBase === '\\') ? '' : '/' . trim($detectedBase, '/');
+}
+$config['base_url'] = $base;
+
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-$base = rtrim($config['base_url'], '/');
 if ($base !== '' && str_starts_with($uri, $base)) {
     $uri = substr($uri, strlen($base));
     $uri = $uri === '' ? '/' : $uri;
+}
+
+if ($uri === '/index.php') {
+    header('Location: ' . ($base === '' ? '/' : $base . '/'), true, 301);
+    exit;
 }
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
