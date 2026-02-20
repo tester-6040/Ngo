@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/helpers.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    redirect();
+}
+
+verify_csrf();
+
 $_SESSION = [];
 if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();

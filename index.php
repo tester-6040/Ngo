@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/layout.php';
 
 render_header('Home');
+$user = current_user();
 ?>
 <section class="grid lg:grid-cols-2 gap-8 items-center">
     <div>
@@ -12,8 +13,12 @@ render_header('Home');
         <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-tight">Professional dress donation workflow for social impact.</h1>
         <p class="mt-5 text-lg text-slate-600 max-w-xl">Connect donors, administrators, and orphanage teams in one reliable system with status visibility, assignment control, and timely notifications.</p>
         <div class="mt-7 flex flex-wrap gap-3">
-            <a href="<?= h(route_url('register')) ?>" class="bg-brand-700 hover:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium">Start Donating</a>
-            <a href="<?= h(route_url('login')) ?>" class="bg-white border border-slate-300 hover:border-slate-400 px-5 py-3 rounded-xl font-medium">Portal Login</a>
+            <?php if ($user): ?>
+                <a href="<?= h(route_url('dashboard')) ?>" class="bg-brand-700 hover:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium">Open Dashboard</a>
+            <?php else: ?>
+                <a href="<?= h(route_url('register')) ?>" class="bg-brand-700 hover:bg-brand-600 text-white px-5 py-3 rounded-xl font-medium">Start Donating</a>
+                <a href="<?= h(route_url('login')) ?>" class="bg-white border border-slate-300 hover:border-slate-400 px-5 py-3 rounded-xl font-medium">Portal Login</a>
+            <?php endif; ?>
         </div>
         <div class="mt-8 grid sm:grid-cols-3 gap-3">
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-xs text-slate-500">Role Accounts</p><p class="text-xl font-semibold">3</p></div>
