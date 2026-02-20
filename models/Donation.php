@@ -80,6 +80,14 @@ final class Donation extends BaseModel
         );
     }
 
+    public function updateStatusById(int $id, string $status): int
+    {
+        return $this->update(
+            'UPDATE donations SET status = :status, updated_at = NOW() WHERE id = :id',
+            ['id' => $id, 'status' => $status]
+        );
+    }
+
     public function deleteById(int $id): int
     {
         return $this->delete('DELETE FROM donations WHERE id = :id', ['id' => $id]);

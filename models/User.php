@@ -44,4 +44,17 @@ final class User extends BaseModel
     {
         return $this->select('SELECT id, name, email, role, created_at FROM users ORDER BY id DESC');
     }
+
+    public function updateById(int $id, string $name, string $email, string $role): int
+    {
+        return $this->update(
+            'UPDATE users SET name = :name, email = :email, role = :role, updated_at = NOW() WHERE id = :id',
+            ['id' => $id, 'name' => $name, 'email' => $email, 'role' => $role]
+        );
+    }
+
+    public function deleteById(int $id): int
+    {
+        return $this->delete('DELETE FROM users WHERE id = :id', ['id' => $id]);
+    }
 }

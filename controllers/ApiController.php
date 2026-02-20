@@ -23,6 +23,18 @@ final class ApiController extends Controller
         }
     }
 
+    private function body(): array
+    {
+        $raw = file_get_contents('php://input') ?: '';
+        $json = json_decode($raw, true);
+
+        if (is_array($json)) {
+            return $json;
+        }
+
+        return $_POST;
+    }
+
     public function users(string $method): void
     {
         $this->ensureAuth();
@@ -32,16 +44,43 @@ final class ApiController extends Controller
         }
 
         if ($method === 'POST') {
-            $name = trim($_POST['name'] ?? '');
-            $email = trim($_POST['email'] ?? '');
-            $password = (string) ($_POST['password'] ?? '');
-            $role = (string) ($_POST['role'] ?? 'user');
+            $payload = $this->body();
+            $name = trim((string) ($payload['name'] ?? ''));
+            $email = trim((string) ($payload['email'] ?? ''));
+            $password = (string) ($payload['password'] ?? '');
+            $role = (string) ($payload['role'] ?? 'user');
+
+            if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8 || !in_array($role, ['admin', 'user', 'orphanage'], true)) {
+                $this->json(['error' => 'Invalid payload'], 422);
+            }
+
             $id = $this->users->create($name, $email, $password, $role);
             $this->json(['id' => $id], 201);
         }
 
+        if ($method === 'PUT' || $method === 'PATCH') {
+            $payload = $this->body();
+            $id = (int) ($payload['id'] ?? 0);
+            $name = trim((string) ($payload['name'] ?? ''));
+            $email = trim((string) ($payload['email'] ?? ''));
+            $role = (string) ($payload['role'] ?? '');
+
+            if ($id < 1 || $name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || !in_array($role, ['admin', 'user', 'orphanage'], true)) {
+                $this->json(['error' => 'Invalid payload'], 422);
+            }
+
+            $this->users->updateById($id, $name, $email, $role);
+            $this->json(['message' => 'Updated']);
+        }
+
         if ($method === 'DELETE') {
-            $this->json(['message' => 'Delete user endpoint placeholder'], 200);
+            $payload = $this->body();
+            $id = (int) ($payload['id'] ?? ($_GET['id'] ?? 0));
+            if ($id < 1) {
+                $this->json(['error' => 'Invalid user id'], 422);
+            }
+            $this->users->deleteById($id);
+            $this->json(['message' => 'Deleted']);
         }
 
         $this->json(['error' => 'Method not allowed'], 405);
@@ -55,8 +94,35 @@ final class ApiController extends Controller
             $this->json(['data' => $this->donations->allWithRelations()]);
         }
 
+        if ($method === 'POST') {
+            $payload = $this->body();
+            $userId = (int) ($payload['user_id'] ?? 0);
+            $description = trim((string) ($payload['description'] ?? ''));
+            $quantity = (int) ($payload['quantity'] ?? 0);
+            $pickupAddress = trim((string) ($payload['pickup_address'] ?? ''));
+
+            if ($userId < 1 || $description === '' || $quantity < 1 || $pickupAddress === '') {
+                $this->json(['error' => 'Invalid payload'], 422);
+            }
+
+            $id = $this->donations->create($userId, $description, $quantity, $pickupAddress);
+            $this->json(['id' => $id], 201);
+        }
+
+        if ($method === 'PUT' || $method === 'PATCH') {
+            $payload = $this->body();
+            $id = (int) ($payload['id'] ?? 0);
+            $status = (string) ($payload['status'] ?? '');
+            if ($id < 1 || !in_array($status, ['pending', 'accepted', 'rejected'], true)) {
+                $this->json(['error' => 'Invalid payload'], 422);
+            }
+            $this->donations->updateStatusById($id, $status);
+            $this->json(['message' => 'Updated']);
+        }
+
         if ($method === 'DELETE') {
-            $id = (int) ($_GET['id'] ?? 0);
+            $payload = $this->body();
+            $id = (int) ($payload['id'] ?? ($_GET['id'] ?? 0));
             if ($id < 1) {
                 $this->json(['error' => 'Invalid donation id'], 422);
             }
@@ -75,9 +141,10 @@ final class ApiController extends Controller
             $this->json(['error' => 'Method not allowed'], 405);
         }
 
-        $donationId = (int) ($_POST['donation_id'] ?? 0);
-        $status = (string) ($_POST['status'] ?? '');
-        $orphanageUserId = (int) ($_POST['orphanage_user_id'] ?? 0);
+        $payload = $this->body();
+        $donationId = (int) ($payload['donation_id'] ?? 0);
+        $status = (string) ($payload['status'] ?? '');
+        $orphanageUserId = (int) ($payload['orphanage_user_id'] ?? 0);
 
         if (!in_array($status, ['accepted', 'rejected'], true) || $donationId < 1 || $orphanageUserId < 1) {
             $this->json(['error' => 'Invalid payload'], 422);
