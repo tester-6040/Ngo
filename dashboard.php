@@ -8,11 +8,11 @@ require_login();
 $role = current_user()['role'];
 
 if ($role === 'admin') {
-    redirect('admin.php');
+    redirect('admin');
 }
 
 if ($role === 'orphanage') {
-    redirect('orphanage.php');
+    redirect('orphanage');
 }
 
-redirect('donate.php');
+redirect('donate');

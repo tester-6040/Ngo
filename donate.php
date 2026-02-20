@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($title === '' || $description === '' || $qty < 1) {
         flash('error', 'All fields are required and quantity must be at least 1.');
-        redirect('donate.php');
+        redirect('donate');
     }
 
     $user = current_user();
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     send_admin_mail($subject, $body);
 
     flash('success', 'Donation submitted successfully. Admin has been notified by email.');
-    redirect('donate.php');
+    redirect('donate');
 }
 
 require_once __DIR__ . '/layout.php';

@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('error', 'Please select valid donation and orphanage.');
     }
 
-    redirect('admin.php');
+    redirect('admin');
 }
 
 require_once __DIR__ . '/layout.php';

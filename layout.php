@@ -58,18 +58,18 @@ function render_header(string $title): void
     <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.16),_transparent_42%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.13),_transparent_40%)]"></div>
     <nav class="sticky top-0 z-20 backdrop-blur bg-white/90 border-b border-slate-200/80">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="index.php" class="font-semibold text-slate-900 tracking-tight text-lg">NGO Dress Donation</a>
+            <a href="<?= h(route_url()) ?>" class="font-semibold text-slate-900 tracking-tight text-lg">NGO Dress Donation</a>
             <div class="flex items-center gap-3 text-sm">
                 <?php if ($user): ?>
-                    <a class="text-slate-600 hover:text-slate-900" href="dashboard.php">Dashboard</a>
+                    <a class="text-slate-600 hover:text-slate-900" href="<?= h(route_url('dashboard')) ?>">Dashboard</a>
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium <?= role_badge($user['role']) ?>">
                         <?= h(ucfirst($user['role'])) ?>
                     </span>
                     <span class="text-slate-500 hidden md:block"><?= h($user['name']) ?></span>
-                    <a class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg" href="logout.php">Logout</a>
+                    <a class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg" href="<?= h(route_url('logout')) ?>">Logout</a>
                 <?php else: ?>
-                    <a class="text-slate-600 hover:text-slate-900" href="login.php">Login</a>
-                    <a class="bg-brand-700 hover:bg-brand-600 text-white px-4 py-2 rounded-lg" href="register.php">Create account</a>
+                    <a class="text-slate-600 hover:text-slate-900" href="<?= h(route_url('login')) ?>">Login</a>
+                    <a class="bg-brand-700 hover:bg-brand-600 text-white px-4 py-2 rounded-lg" href="<?= h(route_url('register')) ?>">Create account</a>
                 <?php endif; ?>
             </div>
         </div>

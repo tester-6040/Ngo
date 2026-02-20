@@ -13,9 +13,40 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+header('X-Frame-Options: SAMEORIGIN');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
 function h(?string $value): string
 {
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
+}
+
+function route_map(): array
+{
+    return [
+        '' => 'index.php',
+        'login' => 'login.php',
+        'register' => 'register.php',
+        'dashboard' => 'dashboard.php',
+        'donate' => 'donate.php',
+        'admin' => 'admin.php',
+        'orphanage' => 'orphanage.php',
+        'logout' => 'logout.php',
+    ];
+}
+
+function app_base_path(): string
+{
+    return APP_BASE_PATH === '' ? '' : '/' . trim(APP_BASE_PATH, '/');
+}
+
+function route_url(string $route = ''): string
+{
+    $route = trim($route, '/');
+    $base = app_base_path();
+
+    return $route === '' ? ($base ?: '/') : $base . '/' . $route;
 }
 
 function current_user(): ?array
@@ -28,16 +59,16 @@ function is_logged_in(): bool
     return current_user() !== null;
 }
 
-function redirect(string $location): void
+function redirect(string $route = ''): void
 {
-    header('Location: ' . $location);
+    header('Location: ' . route_url($route));
     exit;
 }
 
 function require_login(): void
 {
     if (!is_logged_in()) {
-        redirect('login.php');
+        redirect('login');
     }
 }
 
@@ -46,7 +77,7 @@ function require_role(string $role): void
     require_login();
 
     if ((current_user()['role'] ?? '') !== $role) {
-        redirect('dashboard.php');
+        redirect('dashboard');
     }
 }
 
@@ -82,7 +113,7 @@ function verify_csrf(): void
 
     if (!is_string($providedToken) || !hash_equals($sessionToken, $providedToken)) {
         flash('error', 'Your session expired. Please try again.');
-        redirect($_SERVER['HTTP_REFERER'] ?? 'index.php');
+        redirect('login');
     }
 }
 

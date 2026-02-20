@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('success', 'Donation marked as completed.');
     }
 
-    redirect('orphanage.php');
+    redirect('orphanage');
 }
 
 require_once __DIR__ . '/layout.php';

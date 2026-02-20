@@ -10,15 +10,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $role = $_POST['role'] ?? '';
 
-    $stmt = db()->prepare('SELECT id, name, email, password_hash, role FROM users WHERE email = ? LIMIT 1');
+    $stmt = db()->prepare('SELECT id, name, email, password_hash, role, is_active, failed_attempts, locked_until FROM users WHERE email = ? LIMIT 1');
     $stmt->bind_param('s', $email);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
 
-    if (!$user || !password_verify($password, $user['password_hash']) || $user['role'] !== $role) {
+    if (!$user) {
         flash('error', 'Invalid credentials or wrong role selected.');
-        redirect('login.php');
+        redirect('login');
     }
+
+    if ((int) $user['is_active'] !== 1) {
+        flash('error', 'Account is inactive. Please contact admin.');
+        redirect('login');
+    }
+
+    if (!empty($user['locked_until']) && strtotime((string) $user['locked_until']) > time()) {
+        flash('error', 'Account is temporarily locked due to multiple failed attempts. Try again later.');
+        redirect('login');
+    }
+
+    if (!password_verify($password, $user['password_hash']) || $user['role'] !== $role) {
+        $failedAttempts = ((int) $user['failed_attempts']) + 1;
+
+        if ($failedAttempts >= 5) {
+            $update = db()->prepare('UPDATE users SET failed_attempts = 0, locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?');
+            $userId = (int) $user['id'];
+            $update->bind_param('i', $userId);
+            $update->execute();
+            flash('error', 'Too many failed attempts. Account locked for 15 minutes.');
+            redirect('login');
+        }
+
+        $update = db()->prepare('UPDATE users SET failed_attempts = ?, locked_until = NULL WHERE id = ?');
+        $userId = (int) $user['id'];
+        $update->bind_param('ii', $failedAttempts, $userId);
+        $update->execute();
+
+        flash('error', 'Invalid credentials or wrong role selected.');
+        redirect('login');
+    }
+
+    $reset = db()->prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?');
+    $userId = (int) $user['id'];
+    $reset->bind_param('i', $userId);
+    $reset->execute();
 
     session_regenerate_id(true);
     $_SESSION['user'] = [
@@ -29,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     flash('success', 'Welcome back, ' . $user['name'] . '.');
-    redirect('dashboard.php');
+    redirect('dashboard');
 }
 
 require_once __DIR__ . '/layout.php';

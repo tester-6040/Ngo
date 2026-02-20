@@ -7,6 +7,7 @@ const DB_USER = 'root';
 const DB_PASS = '';
 const DB_NAME = 'ngo_donation';
 const ADMIN_ALERT_EMAIL = 'admin@ngo.local';
+const APP_BASE_PATH = '';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 

@@ -13,12 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!in_array($role, ['user', 'orphanage'], true)) {
         flash('error', 'Invalid role selected.');
-        redirect('register.php');
+        redirect('register');
     }
 
     if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
         flash('error', 'Provide valid name, email, and password (min 8 characters).');
-        redirect('register.php');
+        redirect('register');
     }
 
     $stmt = db()->prepare('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)');
@@ -28,10 +28,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param('ssss', $name, $email, $hash, $role);
         $stmt->execute();
         flash('success', 'Registration successful. Please login.');
-        redirect('login.php');
+        redirect('login');
     } catch (mysqli_sql_exception $e) {
         flash('error', 'Email is already in use.');
-        redirect('register.php');
+        redirect('register');
     }
 }
 

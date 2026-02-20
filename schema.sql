@@ -7,8 +7,12 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(120) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'user', 'orphanage') NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    locked_until DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_users_role (role)
+    INDEX idx_users_role (role),
+    INDEX idx_users_active (is_active)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS donations (
@@ -28,6 +32,6 @@ CREATE TABLE IF NOT EXISTS donations (
 ) ENGINE=InnoDB;
 
 -- Default admin login: admin@ngo.local / admin123
-INSERT INTO users (name, email, password_hash, role)
-VALUES ('Platform Admin', 'admin@ngo.local', '$2y$12$oCJkKoXh.2vR7UrO1hGYZ.bS9.IENCriYj.I1n9pR4DwPdLIntcEW', 'admin')
-ON DUPLICATE KEY UPDATE email = VALUES(email);
+INSERT INTO users (name, email, password_hash, role, is_active)
+VALUES ('Platform Admin', 'admin@ngo.local', '$2y$12$oCJkKoXh.2vR7UrO1hGYZ.bS9.IENCriYj.I1n9pR4DwPdLIntcEW', 'admin', 1)
+ON DUPLICATE KEY UPDATE email = VALUES(email), is_active = VALUES(is_active);
