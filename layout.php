@@ -25,28 +25,37 @@ function render_header(string $title): void
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <title><?= h($title) ?> · NGO Dress Donation</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
             tailwind.config = {
               theme: {
                 extend: {
+                  fontFamily: {
+                    sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+                  },
                   colors: {
                     brand: {
-                      50: '#eff6ff',
-                      600: '#2563eb',
-                      700: '#1d4ed8'
+                      50: '#eef2ff',
+                      100: '#e0e7ff',
+                      600: '#4f46e5',
+                      700: '#4338ca',
+                      800: '#3730a3'
                     }
                   },
                   boxShadow: {
-                    soft: '0 10px 35px rgba(15, 23, 42, 0.08)'
+                    soft: '0 12px 35px rgba(15, 23, 42, 0.10)',
+                    card: '0 6px 18px rgba(15, 23, 42, 0.07)'
                   }
                 }
               }
             }
         </script>
     </head>
-    <body class="bg-slate-100 text-slate-900 min-h-screen">
-    <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.16),_transparent_40%)]"></div>
+    <body class="bg-slate-100 text-slate-900 min-h-screen font-sans antialiased">
+    <div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.16),_transparent_42%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.13),_transparent_40%)]"></div>
     <nav class="sticky top-0 z-20 backdrop-blur bg-white/90 border-b border-slate-200/80">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <a href="index.php" class="font-semibold text-slate-900 tracking-tight text-lg">NGO Dress Donation</a>
@@ -54,7 +63,7 @@ function render_header(string $title): void
                 <?php if ($user): ?>
                     <a class="text-slate-600 hover:text-slate-900" href="dashboard.php">Dashboard</a>
                     <span class="px-2.5 py-1 rounded-full text-xs font-medium <?= role_badge($user['role']) ?>">
-                        <?= h($user['role']) ?>
+                        <?= h(ucfirst($user['role'])) ?>
                     </span>
                     <span class="text-slate-500 hidden md:block"><?= h($user['name']) ?></span>
                     <a class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg" href="logout.php">Logout</a>
@@ -81,6 +90,12 @@ function render_footer(): void
 {
     ?>
     </main>
+    <footer class="border-t border-slate-200/80 bg-white/80">
+        <div class="max-w-7xl mx-auto px-6 py-5 text-sm text-slate-500 flex flex-wrap items-center justify-between gap-2">
+            <p>© <?= h((string) date('Y')) ?> NGO Dress Donation Platform</p>
+            <p>Secure role-based portal for donors, admin, and orphanage teams.</p>
+        </div>
+    </footer>
     </body>
     </html>
     <?php

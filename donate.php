@@ -46,49 +46,60 @@ $pending = count(array_filter($donations, static fn($d) => $d['status'] === 'pen
 <div class="grid xl:grid-cols-3 gap-6">
     <section class="xl:col-span-1 bg-white border border-slate-200 rounded-2xl shadow-soft p-6 h-fit">
         <h1 class="text-2xl font-semibold mb-1">Submit donation</h1>
-        <p class="text-slate-500 mb-5">Share details of dresses ready for donation.</p>
+        <p class="text-slate-500 mb-5">Provide clean, well-labeled dress details for faster assignment.</p>
         <form method="post" class="space-y-3" id="donationForm">
             <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
-            <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="title" placeholder="Donation title" required>
-            <textarea class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="description" placeholder="Condition, age group, notes" rows="4" required></textarea>
-            <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="quantity" type="number" min="1" placeholder="Number of dresses" required>
+            <div>
+                <label class="block text-sm font-medium mb-1">Donation title</label>
+                <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="title" placeholder="e.g. Kids winter dresses" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Description</label>
+                <textarea class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="description" placeholder="Condition, age group, notes" rows="4" required></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Quantity</label>
+                <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="quantity" type="number" min="1" placeholder="Number of dresses" required>
+            </div>
             <button class="w-full bg-brand-700 hover:bg-brand-600 text-white px-4 py-2.5 rounded-xl font-medium">Submit Donation</button>
         </form>
     </section>
 
     <section class="xl:col-span-2 space-y-4">
         <div class="grid sm:grid-cols-3 gap-3">
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-                <p class="text-slate-500 text-sm">Total Donations</p>
-                <p class="text-2xl font-semibold mt-1"><?= h((string) count($donations)) ?></p>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-                <p class="text-slate-500 text-sm">Pending</p>
-                <p class="text-2xl font-semibold mt-1"><?= h((string) $pending) ?></p>
-            </div>
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
-                <p class="text-slate-500 text-sm">Assigned</p>
-                <p class="text-2xl font-semibold mt-1"><?= h((string) (count($donations) - $pending)) ?></p>
-            </div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-slate-500 text-sm">Total</p><p class="text-2xl font-semibold mt-1"><?= h((string) count($donations)) ?></p></div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-slate-500 text-sm">Pending</p><p class="text-2xl font-semibold mt-1"><?= h((string) $pending) ?></p></div>
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-slate-500 text-sm">Processed</p><p class="text-2xl font-semibold mt-1"><?= h((string) (count($donations) - $pending)) ?></p></div>
         </div>
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6">
-            <h2 class="text-xl font-semibold mb-4">Donation history</h2>
+
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-200">
+                <h2 class="text-xl font-semibold">Donation history</h2>
+            </div>
             <?php if (!$donations): ?>
-                <p class="text-slate-500">No donations submitted yet.</p>
+                <div class="p-6 text-slate-500">No donations submitted yet.</div>
             <?php else: ?>
-                <div class="space-y-3">
-                    <?php foreach ($donations as $donation): ?>
-                        <article class="border border-slate-200 rounded-xl p-4">
-                            <div class="flex flex-wrap gap-2 justify-between">
-                                <p class="font-medium"><?= h($donation['title']) ?> (x<?= h((string) $donation['quantity']) ?>)</p>
-                                <span class="text-xs px-2.5 py-1 rounded-full <?= $donation['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' ?>"><?= h($donation['status']) ?></span>
-                            </div>
-                            <p class="text-sm text-slate-600 mt-1"><?= h($donation['description']) ?></p>
-                            <?php if ($donation['orphanage_name']): ?>
-                                <p class="text-xs mt-2 text-slate-500">Assigned to: <?= h($donation['orphanage_name']) ?></p>
-                            <?php endif; ?>
-                        </article>
-                    <?php endforeach; ?>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-slate-600">
+                            <tr>
+                                <th class="text-left px-4 py-3 font-semibold">Title</th>
+                                <th class="text-left px-4 py-3 font-semibold">Quantity</th>
+                                <th class="text-left px-4 py-3 font-semibold">Status</th>
+                                <th class="text-left px-4 py-3 font-semibold">Assigned to</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                        <?php foreach ($donations as $donation): ?>
+                            <tr>
+                                <td class="px-4 py-4 min-w-[300px]"><p class="font-medium"><?= h($donation['title']) ?></p><p class="text-slate-500 mt-1"><?= h($donation['description']) ?></p></td>
+                                <td class="px-4 py-4"><?= h((string) $donation['quantity']) ?></td>
+                                <td class="px-4 py-4"><span class="text-xs px-2.5 py-1 rounded-full <?= $donation['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' ?>"><?= h($donation['status']) ?></span></td>
+                                <td class="px-4 py-4"><?= h($donation['orphanage_name'] ?? 'Pending assignment') ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             <?php endif; ?>
         </div>

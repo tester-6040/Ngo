@@ -38,31 +38,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once __DIR__ . '/layout.php';
 render_header('Register');
 ?>
-<div class="max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-soft p-8">
-    <h1 class="text-2xl font-semibold mb-2">Create your account</h1>
-    <p class="text-slate-500 mb-6">Join as a donor or orphanage partner.</p>
+<div class="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl shadow-soft p-8 md:p-10">
+    <h1 class="text-3xl font-semibold mb-2">Create your portal account</h1>
+    <p class="text-slate-500 mb-8">Register as a donor or orphanage partner to join the NGO donation network.</p>
     <form method="post" class="grid md:grid-cols-2 gap-4" id="registerForm">
         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+
         <div class="md:col-span-2">
-            <label class="block text-sm font-medium mb-1">Full name</label>
-            <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="name" required>
+            <label class="block text-sm font-medium mb-1" for="name">Full name</label>
+            <input id="name" class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="name" required>
         </div>
+
         <div>
-            <label class="block text-sm font-medium mb-1">Email</label>
-            <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="email" type="email" required>
+            <label class="block text-sm font-medium mb-1" for="email">Email</label>
+            <input id="email" class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="email" type="email" required>
         </div>
+
         <div>
-            <label class="block text-sm font-medium mb-1">Account type</label>
-            <select class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="role" required>
+            <label class="block text-sm font-medium mb-1" for="role">Account type</label>
+            <select id="role" class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="role" required>
                 <option value="user">User (Donor)</option>
                 <option value="orphanage">Orphanage</option>
             </select>
         </div>
+
         <div class="md:col-span-2">
-            <label class="block text-sm font-medium mb-1">Password</label>
-            <input class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="password" type="password" minlength="8" required>
+            <label class="block text-sm font-medium mb-1" for="password">Password</label>
+            <input id="password" class="w-full border border-slate-300 rounded-xl px-3 py-2.5" name="password" type="password" minlength="8" required>
+            <p class="text-xs text-slate-500 mt-1">Use at least 8 characters.</p>
         </div>
-        <div class="md:col-span-2">
+
+        <div class="md:col-span-2 pt-2">
             <button class="w-full bg-brand-700 hover:bg-brand-600 text-white py-2.5 rounded-xl font-medium">Create account</button>
         </div>
     </form>

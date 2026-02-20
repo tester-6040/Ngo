@@ -31,43 +31,62 @@ $orphans = db()->query("SELECT id, name FROM users WHERE role = 'orphanage' ORDE
 $pendingCount = count(array_filter($donations, static fn($item) => $item['status'] === 'pending'));
 ?>
 <div class="space-y-5">
-    <div class="grid sm:grid-cols-3 gap-3">
-        <div class="bg-white border border-slate-200 rounded-xl p-4"><p class="text-sm text-slate-500">Total Donations</p><p class="text-2xl font-semibold"><?= h((string) count($donations)) ?></p></div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4"><p class="text-sm text-slate-500">Pending Assignment</p><p class="text-2xl font-semibold"><?= h((string) $pendingCount) ?></p></div>
-        <div class="bg-white border border-slate-200 rounded-xl p-4"><p class="text-sm text-slate-500">Orphanages</p><p class="text-2xl font-semibold"><?= h((string) count($orphans)) ?></p></div>
+    <div class="grid sm:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-sm text-slate-500">Total Donations</p><p class="text-2xl font-semibold"><?= h((string) count($donations)) ?></p></div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-sm text-slate-500">Pending</p><p class="text-2xl font-semibold"><?= h((string) $pendingCount) ?></p></div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-sm text-slate-500">Assigned</p><p class="text-2xl font-semibold"><?= h((string) (count($donations) - $pendingCount)) ?></p></div>
+        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-card"><p class="text-sm text-slate-500">Orphanages</p><p class="text-2xl font-semibold"><?= h((string) count($orphans)) ?></p></div>
     </div>
 
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-soft p-6">
-        <h1 class="text-2xl font-semibold mb-4">Donation assignment queue</h1>
-        <?php if (!$donations): ?>
-            <p class="text-slate-500">No donations yet.</p>
-        <?php else: ?>
-            <div class="space-y-3">
-                <?php foreach ($donations as $item): ?>
-                    <article class="border border-slate-200 rounded-xl p-4">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <p class="font-medium"><?= h($item['title']) ?> (x<?= h((string) $item['quantity']) ?>)</p>
-                            <span class="text-xs px-2.5 py-1 rounded-full <?= $item['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' ?>"><?= h($item['status']) ?></span>
-                        </div>
-                        <p class="text-sm text-slate-600 mt-1"><?= h($item['description']) ?></p>
-                        <p class="text-sm mt-2">Donor: <span class="font-medium"><?= h($item['donor_name']) ?></span></p>
-                        <?php if ($item['orphanage_name']): ?>
-                            <p class="text-xs text-slate-500 mt-1">Currently assigned to <?= h($item['orphanage_name']) ?></p>
-                        <?php endif; ?>
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-200">
+            <h1 class="text-2xl font-semibold">Donation assignment queue</h1>
+            <p class="text-slate-500 text-sm mt-1">Review incoming donations and assign them to the right orphanage.</p>
+        </div>
 
-                        <form method="post" class="mt-3 flex flex-wrap items-center gap-2">
-                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
-                            <input type="hidden" name="donation_id" value="<?= h((string) $item['id']) ?>">
-                            <select name="orphanage_id" class="border border-slate-300 rounded-xl px-3 py-2" required>
-                                <option value="">Assign to orphanage</option>
-                                <?php foreach ($orphans as $orphan): ?>
-                                    <option value="<?= h((string) $orphan['id']) ?>"><?= h($orphan['name']) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button class="bg-brand-700 hover:bg-brand-600 text-white px-4 py-2 rounded-xl">Assign</button>
-                        </form>
-                    </article>
-                <?php endforeach; ?>
+        <?php if (!$donations): ?>
+            <div class="p-6 text-slate-500">No donations yet.</div>
+        <?php else: ?>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold">Donation</th>
+                            <th class="text-left px-4 py-3 font-semibold">Donor</th>
+                            <th class="text-left px-4 py-3 font-semibold">Status</th>
+                            <th class="text-left px-4 py-3 font-semibold">Orphanage</th>
+                            <th class="text-left px-4 py-3 font-semibold">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                    <?php foreach ($donations as $item): ?>
+                        <tr class="align-top">
+                            <td class="px-4 py-4 min-w-[260px]">
+                                <p class="font-medium"><?= h($item['title']) ?> (x<?= h((string) $item['quantity']) ?>)</p>
+                                <p class="text-slate-500 mt-1"><?= h($item['description']) ?></p>
+                            </td>
+                            <td class="px-4 py-4"><?= h($item['donor_name']) ?></td>
+                            <td class="px-4 py-4">
+                                <span class="text-xs px-2.5 py-1 rounded-full <?= $item['status'] === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' ?>"><?= h($item['status']) ?></span>
+                            </td>
+                            <td class="px-4 py-4"><?= h($item['orphanage_name'] ?? 'Not assigned') ?></td>
+                            <td class="px-4 py-4 min-w-[250px]">
+                                <form method="post" class="flex flex-col gap-2">
+                                    <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                    <input type="hidden" name="donation_id" value="<?= h((string) $item['id']) ?>">
+                                    <select name="orphanage_id" class="border border-slate-300 rounded-xl px-3 py-2" required>
+                                        <option value="">Assign to orphanage</option>
+                                        <?php foreach ($orphans as $orphan): ?>
+                                            <option value="<?= h((string) $orphan['id']) ?>"><?= h($orphan['name']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button class="bg-brand-700 hover:bg-brand-600 text-white px-4 py-2 rounded-xl">Assign donation</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         <?php endif; ?>
     </div>

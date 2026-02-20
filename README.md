@@ -1,13 +1,13 @@
 # NGO Dress Donation Portal (PHP + Tailwind + MySQL)
 
-Production-style, no-framework web portal where users donate used dresses and admins route them to orphanages.
+Production-grade, no-framework portal where users donate used dresses and admins route them to orphanages.
 
 ## Features
 - Separate login for **Admin**, **User (Donor)**, and **Orphanage**.
-- Professional, responsive Tailwind UI (dashboard cards, clean forms, role badges).
-- User donation form with history tracking.
+- Professional UI with modern typography, polished cards, responsive tables, and role-specific dashboards.
+- User donation form with complete history tracking.
 - Automatic admin mail notification when new donations are submitted (`mail()` with `mail.log` fallback).
-- Admin assignment queue for routing donations to orphanages.
+- Admin assignment board for routing donations to orphanages.
 - Orphanage dashboard with completion updates.
 - Security improvements: CSRF protection, session regeneration on login, secure session cookies.
 
@@ -34,7 +34,7 @@ Production-style, no-framework web portal where users donate used dresses and ad
 - Password: `admin123`
 
 ## Main Pages
-- `index.php` – modern landing page
+- `index.php` – professional landing page
 - `register.php` – donor/orphanage signup
 - `login.php` – role-based secure login
 - `donate.php` – donor dashboard and donation history
